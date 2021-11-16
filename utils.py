@@ -99,7 +99,6 @@ def plot_graphs(sample_size_list, metric_list, model_name):
     plt.rcParams.update({"font.size": 44})
     fig, axis = plt.subplots(1, 2)
     fig.set_size_inches(30, 15)
-    actual_acc = metric_list["actual_acc"]
 
     for i, metric in enumerate(["acc", "kappa"]):
         axis[i].locator_params(nbins=10)
@@ -109,7 +108,6 @@ def plot_graphs(sample_size_list, metric_list, model_name):
         axis[i].set_ylabel(metric, labelpad=15)
 
         actual = metric_list.pop("actual_%s" % metric)
-        metric_list.pop("estim_%s" % metric)
         for metric_name in metric_list.keys():
             if metric_name.endswith(metric):
                 axis[i].plot(
@@ -138,7 +136,7 @@ def plot_graphs(sample_size_list, metric_list, model_name):
     # plt.show()
 
 
-def plot_estim_graph(model_metrics):
+def plot_estim_graph(model_metrics, sample_size_list):
     plt.rcParams.update({"font.size": 37})
     fig, axis = plt.subplots(1, 2)
     fig.set_size_inches(30, 15)
@@ -152,25 +150,25 @@ def plot_estim_graph(model_metrics):
         axis[i].set_ylim([0.4, 1])
         axis[i].set_ylabel(metric, labelpad=15)
 
-        # Scatterplot of only the first nmodels for visual clarity
-        actual = model_metrics.pop("actual_%s" % metric)[:nmodels]
+        # Plot of only the first nmodels for visual clarity
         reward = model_metrics.pop("reward_%s" % metric)[:nmodels]
-        estim = model_metrics.pop("estim_%s" % metric)[:nmodels]
-        axis[i].scatter([0] * len(actual), actual, s=400, marker="o", label="Baseline")
-        axis[i].scatter(
-            [80] * len(reward), reward, s=400, marker="^", label="Reward Sampling (RS)"
-        )
-        axis[i].scatter(
-            [80] * len(estim), estim, s=400, marker="P", label="Estimate after RS"
-        )
+        estim = model_metrics.pop("reward_estim_%s" % metric)[:nmodels]
 
         for j in range(nmodels):
-            axis[i].annotate(j, (2, actual[j]), size=30)
-            axis[i].annotate(j, (82, reward[j]), size=30)
-            axis[i].annotate(j, (82, estim[j]), size=30)
-
-        axis[i].legend(loc="upper left")
-    fig.savefig("images/estim_scatter.pdf")
+            axis[i].plot(
+                sample_size_list,
+                reward[j],
+                label="Reward Sampling (RS) - k=%s" % j,
+                linewidth=5,
+            )
+            axis[i].plot(
+                sample_size_list,
+                estim[j],
+                label="Estimate after RS - k=%s" % j,
+                linewidth=5,
+            )
+        axis[i].legend(loc="lower right")
+    fig.savefig("images/estim_plot.pdf")
 
 
 def split_dataframe_by_test_id(df):

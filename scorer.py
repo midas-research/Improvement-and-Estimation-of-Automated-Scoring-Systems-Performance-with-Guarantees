@@ -43,12 +43,6 @@ def calc_metrics(result_df, human_df, sample, classes):
 
 def aggregate_metrics(metric_list, sample_method, metrics):
     """Aggregate metrics into list for plotting."""
-    metric_list["estim_acc"] = metrics.pop(
-        "estim_acc"
-    )  # Overwrite for every sample size.
-    metric_list["estim_kappa"] = metrics.pop(
-        "estim_kappa"
-    )  # We only need for biggest sample
     for metric_name, val in metrics.items():
         key = "%s_%s" % (sample_method, metric_name)
         if key not in metric_list:

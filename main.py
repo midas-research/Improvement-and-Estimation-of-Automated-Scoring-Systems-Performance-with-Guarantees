@@ -1,6 +1,7 @@
 """
 Entrypoint for running experiments.
 """
+import json
 import pandas as pd
 import dask.dataframe as dd
 import dask.distributed
@@ -30,17 +31,15 @@ def main():
         "Pseudo-0.75",
     ]
     client = dask.distributed.Client()
-    model_metrics = {
-        "actual_acc": [],
-        "actual_kappa": [],
-        "estim_acc": [],
-        "estim_kappa": [],
+    model_metrics = {  # Store estimated and reward acc/kappa for all models
+        "reward_estim_acc": [],
+        "reward_estim_kappa": [],
         "reward_acc": [],
         "reward_kappa": [],
     }
 
     for model in models:
-        metric_list = {}
+        metric_list = {}  # Metrics of one model
         sample_size_list = []
 
         # Get predictions for given model, and calculate correlation matrix
@@ -69,10 +68,12 @@ def main():
                 metric_list = aggregate_metrics(metric_list, sample_method, metrics)
             sample_size_list.append(round(sample_size * 100 / N, 2))
             print(
-                "Experiment - [Model Name-%s , Sample Size-%s] - complete"
-                % (model, sample_size)
+                "\rExperiments for %s - %.2f %% complete"
+                % (model, sample_size * 100 / N),
+                end="",
             )
 
+        print("\rExperiments for %s - 100%% complete" % model)
         metric_list["actual_acc"] = (
             (test_human_df.label == test_human_df.prediction).astype(int).mean()
         )
@@ -83,16 +84,28 @@ def main():
             labels=classes,
         )
 
-        print(metric_list)
-        for key in ["actual_acc", "actual_kappa", "estim_acc", "estim_kappa"]:
+        for key in [
+            "reward_estim_acc",
+            "reward_estim_kappa",
+            "reward_acc",
+            "reward_kappa",
+        ]:
             model_metrics[key].append(metric_list[key])
-        model_metrics["reward_acc"].append(metric_list["reward_acc"][-1])
-        model_metrics["reward_kappa"].append(metric_list["reward_kappa"][-1])
+        print("Metrics written to %s.json.log" % model)
+        with open("%s.json.log" % model, "w") as f:
+            f.write(json.dumps(metric_list, indent=4))
+
+        # Filter out estimates from metric_list
+        metric_list = {
+            k: v for k, v in metric_list.items() if k.split("_")[1] != "estim"
+        }
 
         plot_graphs(sample_size_list, metric_list, model)
-        print("Experiments for model '%s' complete" % model)
+        print("\nExperiments for model '%s' complete" % model)
         print("-----------------")
-    plot_estim_graph(model_metrics)
+        if model == "LSTM-Baseline":
+            break
+    plot_estim_graph(model_metrics, sample_size_list)
     print("All experiments complete!")
 
 
