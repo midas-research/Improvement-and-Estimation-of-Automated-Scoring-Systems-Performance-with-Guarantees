@@ -28,7 +28,7 @@ def gen_human_machine_matrix(df, classes):
     human_machine_matrix = pd.DataFrame.from_dict(
         human_machine_matrix, orient="index", columns=["h/" + c for c in classes]
     )
-    # plot_human_machine_matrix(df, classes)
+    plot_human_machine_matrix(df, classes)
     return human_machine_matrix
 
 
@@ -36,19 +36,23 @@ def plot_human_machine_matrix(df, classes):
     """Plot the human-machine matrix for visualiaztion."""
     from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
     import matplotlib.pyplot as plt
+    import matplotlib
+
+    # Use TrueType fonts
+    matplotlib.rcParams['pdf.fonttype'] = 42
 
     conf_mat = confusion_matrix(
         df.predictions, df.rater1, labels=classes, normalize="true"
     )
-    plt.rcParams.update({"font.size": 20})
-    plt.rcParams["figure.figsize"] = (15, 15)
+    plt.rcParams.update({"font.size": 26})
+    plt.rcParams["figure.figsize"] = (16, 16)
     disp = ConfusionMatrixDisplay(conf_mat, display_labels=classes)
     disp.plot(cmap=plt.cm.Blues, colorbar=False)
     disp.ax_.xaxis.set_label_position("top")
     disp.ax_.xaxis.tick_top()
     plt.xlabel("Human Label")
     plt.ylabel("Machine Predictions")
-    plt.savefig("images/human_machine_matrix.png")
+    plt.savefig("images/human_machine_matrix.pdf")
     return
 
 

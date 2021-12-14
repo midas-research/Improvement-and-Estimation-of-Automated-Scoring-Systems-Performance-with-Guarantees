@@ -6,6 +6,7 @@ import numpy as np
 import pandas as pd
 import dask.dataframe as dd
 import matplotlib.pyplot as plt
+import matplotlib
 
 
 def load_data(classes):
@@ -96,7 +97,10 @@ def calc_final_df(df):
 
 def plot_graphs(sample_size_list, metric_list, model_name):
     """Configure, save and display plots."""
-    plt.rcParams.update({"font.size": 44})
+    # Use TrueType fonts
+    matplotlib.rcParams['pdf.fonttype'] = 42
+
+    plt.rcParams.update({"font.size": 55})
     fig, axis = plt.subplots(1, 2)
     fig.set_size_inches(30, 15)
 
@@ -105,6 +109,7 @@ def plot_graphs(sample_size_list, metric_list, model_name):
         axis[i].set_xlim([0, 82])
         axis[i].set_xlabel("% responses scored by humans", labelpad=15)
         axis[i].set_ylim([0.5, 1])
+        axis[i].set_yticks([0.5, 0.6, 0.7, 0.8, 0.9, 1])
         axis[i].set_ylabel(metric, labelpad=15)
 
         actual = metric_list.pop("actual_%s" % metric)
@@ -130,14 +135,17 @@ def plot_graphs(sample_size_list, metric_list, model_name):
     fig.tight_layout()
     fig.savefig("images/%s.pdf" % model_name)
 
-    figlegend = plt.figure(figsize=(10, 10))
+    figlegend = plt.figure(figsize=(12, 12))
     figlegend.legend(*handles_labels, loc="center")
     figlegend.savefig("images/legend.pdf")
     # plt.show()
 
 
 def plot_estim_graph(model_metrics, sample_size_list):
-    plt.rcParams.update({"font.size": 37})
+    # Use TrueType fonts
+    matplotlib.rcParams['pdf.fonttype'] = 42
+
+    plt.rcParams.update({"font.size": 45})
     fig, axis = plt.subplots(1, 2)
     fig.set_size_inches(30, 15)
     nmodels = 2
@@ -149,6 +157,7 @@ def plot_estim_graph(model_metrics, sample_size_list):
         axis[i].set_xticks(list(range(0, 90, 10)))
         axis[i].set_ylim([0.4, 1])
         axis[i].set_ylabel(metric, labelpad=15)
+        axis[i].set_yticks([0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1])
 
         # Plot of only the first nmodels for visual clarity
         reward = model_metrics.pop("reward_%s" % metric)[:nmodels]
@@ -158,13 +167,13 @@ def plot_estim_graph(model_metrics, sample_size_list):
             axis[i].plot(
                 sample_size_list,
                 reward[j],
-                label="Reward Sampling (RS) - k=%s" % j,
+                label="Reward Sampling(RS)-%s" % j,
                 linewidth=5,
             )
             axis[i].plot(
                 sample_size_list,
                 estim[j],
-                label="Estimate after RS - k=%s" % j,
+                label="Estimate after RS -%s" % j,
                 linewidth=5,
             )
         axis[i].legend(loc="lower right")

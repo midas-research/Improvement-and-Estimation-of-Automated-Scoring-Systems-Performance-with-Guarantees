@@ -73,7 +73,7 @@ def main():
                 end="",
             )
 
-        print("\rExperiments for %s - 100%% complete" % model)
+        print("\rExperiments for %s - 100%% complete\t\t\t" % model)
         metric_list["actual_acc"] = (
             (test_human_df.label == test_human_df.prediction).astype(int).mean()
         )
@@ -103,8 +103,6 @@ def main():
         plot_graphs(sample_size_list, metric_list, model)
         print("\nExperiments for model '%s' complete" % model)
         print("-----------------")
-        if model == "LSTM-Baseline":
-            break
     plot_estim_graph(model_metrics, sample_size_list)
     print("All experiments complete!")
 
